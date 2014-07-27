@@ -1,0 +1,78 @@
+## GETDATA-005 Course Project:  Data Analysis Codebook
+
+### Body Acceleration Data Transformation Process
+
+Author:     Dennis Barger
+Date:       7/27/2014
+Course:     getdata-005
+
+### Overview
+Document describes the transformation process for creating tidy data sets for analyzing Body Acceleration Mean values parsed from the UCI HAR data sets.  The process  creates two csv files: 1) run_analysis_output_v1.csv and 2) run_analysis_output_v2.csv.
+
+### Data File:  run_analysis_output_v1.csv
+Overview
+The file represents individual subject observations for specific subject activities.  The observation contains the mean Body Acceleration for the X, Y and Z direction.  There are multile observations for a subject and activity.
+
+Variables (features):
+* SubjectId - Numeric value representing the subject participating in the experiment.
+* ActivityId - Numeric value representing the activity performed by the subject.
+* ActivityDescr - Categorical variable containing the Activity name (i.e. Walking, etc.)
+* XBodyAccMean - Numeric value representing the mean of the X direction Body Acceleration.
+* YBodyAccMean - Numeric value representing the mean of the Y direction Body Acceleration
+* ZBodyAccMean - Numeric value representing the Z direction Body Acceleration.
+
+### Data File:  run_analysis_output_v2.csv
+Overview
+The file represents the average Body Acceleration mean measures by each X, Y and Z direction by subject and activity.  The file is a summary of the detail observations in run_analysis_output_v1.csv.
+
+Variables (features):
+* SubjectId - Numeric value representing the subject participating in the experiment.
+* ActivityId - Numeric value representing the activity performed by the subject.
+* ActivityDescr - Categorical variable containing the Activity name (i.e. Walking, etc.)
+* XBodyAccMean - Numeric value representing the mean of the X direction Body Acceleration.
+* YBodyAccMean - Numeric value representing the mean of the Y direction Body Acceleration
+* ZBodyAccMean - Numeric value representing the Z direction Body Acceleration.
+
+### Data Transformation Process for Run_analysis_output_v1.csv
+The transformation process outlines the step required to extract Body Acceleration Mean values from the UCI HAR data set and create a tidy data set for specific analysis of Body Acceleration mean values.  The step include the following:
+
+* Create the common transformation lookup values.  This includes the specific UCI HAR data set variables/features to extract and the activity labels.
+
+data <- read.table("features.txt", header=FALSE)
+measures <- data[1:3,2] 
+ActivityLabel <- read.table("activity_labels.txt", header=FALSE)
+
+* Build the modified training data set to only include Body Acceleration Mean features.  The first step is to identify the Body Acceleration subject and lookup the Activity description based on the Activity Id.  The next step is to build the train data frame combining the Subject, Activity Description and subset of the train features. This also includes adding descriptive variables to the modified data frame, which will become the variable/column names in the output file.
+
+colSubject <- read.table("./train/subject_train.txt", header=FALSE)
+ActivityId <- read.table("./train/y_train.txt", header=FALSE)
+names(ActivityId) <- c("id")
+names(ActivityLabel) <- c("id","activity")
+colActivity <- merge(ActivityId, ActivityLabel, by="id")
+
+data <- read.table("./train/x_train.txt", header=FALSE)
+dataset <- data[,measures]
+trainset <- cbind(colSubject, colActivity, dataset)
+names(trainset) <- c("SubjectId","ActivityId","ActivityDescr","XBodyAccMean","YBodyAccMean","ZBodyAccMean")
+
+* Once the modified train data frame is created, the same steps are used to create the modified test data frame.
+
+* Next, create the finalset data frame which represents the data set that will be exported to run_analysis_output_v1.csv.  Initial analysis of hte train and test data frames indicats the records/observations were unqiue across the two data frames.  In other words, the same subject and activity did not exist in both data frames.  As result, rbind was used to merge the data set because the objective is to add the test observations to the train observations and ensure the data is tidy.
+
+finalset <- rbind(trainset, testset)
+write.csv(finalset, file="run_analysis_output.csv")
+
+### Data Transformation Process for Run_analysis_output_v2.csv
+The transformation process for creating the second file involves averaging the Body Acceleration measurements by subject and activity.  Data frames are created for each directional coordinate (x,y,z) and the data frames are merged in order to export to a single file called run_analysis_output_v2.csv.
+
+x <- aggregate(XBodyAccMean ~ SubjectId + ActivityId + ActivityDescr, FUN=mean, data=finalset)
+y <- aggregate(YBodyAccMean ~ SubjectId + ActivityId + ActivityDescr, FUN=mean, data=finalset)
+z <- aggregate(ZBodyAccMean ~ SubjectId + ActivityId + ActivityDescr, FUN=mean, data=finalset)
+
+t <- merge(x,y, by=c("SubjectId","ActivityId","ActivityDescr"))
+t <- merge(t,z, by=c("SubjectId","ActivityId","ActivityDescr"))
+
+write.csv(t, file="run_analysis_output_v2.csv", row.names=FALSE)
+
+
+* The final step in the transformation process is to clean/remove all data frames created during the process.  This is to ensure efficient of memory.

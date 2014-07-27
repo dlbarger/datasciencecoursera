@@ -1,0 +1,22 @@
+## README:  GETDATA-005 Course Project
+
+### Overview
+The course project includes 4 files as the final deliverables:
+* run_analysis.R - source code for generating tidy data files
+* run_analysis_codebook.Rmd - description of the transformation process for creating files
+* run_analysis_output_v1.csv - data file of detail Body Acceleration Mean observations
+* run_analysis_output_v2.csv - summary data file with average Body Acceleration measurements by subject and activity
+
+The purpose of the transformation process is to create tidy data files for future analysis of Body Acceleration measurements parsed from the UCI HAR data files.  The measurements include the X, Y and Z directional coordinates for Body Acceleration data captures by subject completing specific activities such as walking.
+
+The transformation process is captured in the run_analysis.R script.  It include the following steps:
+
+* Create common lookup values for Activity labels and identify Body Acceleration measurements (features)
+* Create individual data frames for subject and activity description values.  
+* Load the detail train and test data into individual data frames
+* Bind the subject and activity description variables to the individual train and test data frames.
+* Apply descriptive variables to the train and test data frames.
+* Combine the train and test data frames and export to a csv file called run_analysis_output_v1.csv
+* Use the combined train & test data frame to average the Body Acceleration measurements by subject and activity.
+* Export the data to the file run_analysis_output_v2.csv.
+* Finally clean up all objects used in the script.

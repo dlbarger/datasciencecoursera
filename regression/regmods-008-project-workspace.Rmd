@@ -1,0 +1,85 @@
+---
+title: "regmods-008-project-workspace"
+author: "Dennis Barger"
+date: "Thursday, November 20, 2014"
+output: word_document
+---
+# Course Project Overview
+## Scenario
+You work for Motor Trend, a magazine about the automobile industry.  Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (mpg)(outcome).  They are particularly interested in the following quesions:
+
+*  Is an automatic or manual transmission better for MPG?
+*  Quantify the MPG difference between automatic and manual transmissions.
+
+## Approach
+Use the "mtcars" data set in R and writ up an analysis to answer the questions.  The analysis should use regression models and exploratory data analysis techniques.
+
+The report deliverable should include the following:
+
+*  Written as a PDF printout of a compiled (using knitr) R markdown document.
+*  Brief.  Roughly the equivalent of 2 pages or less for the main text.  Supporting figures in an appendix can be included up to 5 total pages including the 2 for main report.  The appendix can only include figures.
+*  Include a first paragraph executive summary.
+*  Upload the PDF document to Coursera.
+
+## Peer Grading
+The report will be graded based on the following criteria:
+
+*  Constructive feedback.  Overall strengths and weaknesses in the submission.  Provide advice how the work could be improved in the future.
+*  Did the report interpret the coefficients correctly?
+*  Did the report included exploratory data analysis?
+*  Did the report fit multiple models and detail the strategy for model selection?
+*  Did the report answer the questions?
+*  Did the report do a residual plot and some diagnositics?
+*  Did the report quantify the uncertaintiy in conclusions and perform inference correctly?
+*  Was the report brief (2 pages max) for the main body and no longer than 5 pages of supporting appendix figures?
+*  Was the report done in Rmd (knitr)?
+
+## MTCARS Data Set Overview
+
+### Description
+The MTCARS dataset was extracted from teh 1974 Motor Trend US magazine and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models).
+
+### Usage
+mtcars
+
+### Format
+A data frame with 32 observations on 11 variables.
+
+Position    | Element   | Description
+------------|-----------|-------------------------------
+1           |mpg        |Miles/(US) gallon
+2           |cyl	    |Number of cylinders
+3           |disp       |Displacement (cu.in.)
+4           |hp         |Gross horsepower
+5           |drat	    |Rear axle ratio
+6           |wt	        |Weight (lb/1000)
+7           |qsec	    |1/4 mile time
+8           |vs	        |V/S
+9           |am	        |Transmission (0 = automatic, 1 = manual)
+10          |gear	    |Number of forward gears
+11          | carb	    |Number of carburetors
+
+### Source
+Henderson and Velleman (1981), Building multiple regression models interactively. Biometrics, 37, 391-411.
+
+# Workspace
+## Exploratory Data Analysis
+
+```{r}
+data(mtcars)
+auto <- mtcars[mtcars$am==0,]
+manl <- mtcars[mtcars$am==1,]
+auto_mean <- round(mean(auto$mpg),2)
+manl_mean <- round(mean(manl$mpg),2)
+inc_pctg <- round((manl_mean - auto_mean)/auto_mean * 100,2)
+paste("Mean mpg for automatic:  ",auto_mean)
+paste("Mean mpg for manual:  ",manl_mean)
+paste("Difference in mpg for manual:  ",inc_pctg,"%")
+
+## Use boxplot to compare MPG by automatic and manual transmission
+boxplot(manl$mpg,col="lightyellow")
+abline(h=auto_mean,col="red")
+quantile(manl$mpg)
+quantile(auto$mpg)
+```
+

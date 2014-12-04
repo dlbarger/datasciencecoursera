@@ -1,0 +1,68 @@
+---
+title: "MPG Comparison of Automatic and Manual Transmissions"
+author: "D.Barger, Coursera REMODS-008 Course Project"
+date: "Sunday, November 23, 2014"
+output: word_document
+---
+#Executive Summary
+Generally speaking, most drivers believe automobiles with manual transmission have better miles per gallon than automatic transmission.  Based on the following analysis using data collected by "Motor Trend" magazine in 1974, manual transmission automobiles get 2.084 MPG more thant automatic transmission for every mile driven.
+
+##Exploratory Analysis
+```{r echo=FALSE}
+data(mtcars)
+```
+Based on the graphs in the Appendix ("Exploratory Analysis"), the data follows a normal distribution.  On average, automobiles with manual transmission get an additional 7.24 miles per gallon with an interquartile range of 9.4 miles per gallon.
+
+```{r echo=FALSE}
+mtcars$am <- as.factor(mtcars$am)
+levels(mtcars$am) <- c("Automatic","Manual")
+agg <- aggregate(mpg ~ am, data=mtcars, mean)
+print(agg)
+```
+##Hypothesis Testing:  Is there a Significant Difference?
+The initial results indicate automobiles with manual transmission provide better MPG, but is the difference significant?  Hypothesis testing will determine significance and whether additional analysis is beneficial.
+```{r}
+a <- mtcars[mtcars$am=="Automatic",]
+m <- mtcars[mtcars$am=="Manual",]
+t.test(a$mpg,m$mpg)
+```
+The P-Value is 0.001374 and the difference in means is not zero.  There is a significant difference between manual and automatic transmissions as it relates to miles per gallon (MPG).
+
+###Model Selection
+There are numerous categorical variables in the mtcars dataset.  To ensure model results are not skewed, selection of appropriate predicators is important.  It seems horsepower (hp) and automobile weight (wt) are the best predicators for our model.
+```{r}
+data(mtcars)
+cor(mtcars)[1,]
+```  
+###Regression Modeling
+Before conducting any multivariate regression analysis, let's fit a simple regression between mpg and transmission types (am)
+```{r}
+mtcars$am <- factor(mtcars$am, labels=c("Automatic","Manual"))
+fit <- lm(mpg ~ am, data=mtcars)
+summary(fit)$coef
+```
+THe relationship between variables am and mpg only explain around 36% of variance (Multiple R-squared).  Additional variables are needed int the model to gain more accuracy.
+
+```{r}
+fit <- lm(mpg ~ am + wt + hp, data=mtcars)
+summary(fit)$coef
+```
+###Conclusion
+Adding hp and wt to model as predicators explained 84% of the model variance.  As a result, the model proved manual transmission get 2.085 miles per gallon than automobiles with automatic transmission.
+
+#Appendix
+
+##Exploratory Analysis Graphs
+```{r echo=FALSE}
+d <- density(mtcars$mpg)
+plot(d,main="MPG Density Plot",xlab="MPG")
+boxplot(mtcars$mpg ~ mtcars$am)
+```
+
+##Regression Modeling Graphs
+```{r echo=FALSE}
+#multivariate regression plots
+#par(mfrow = c(1,2))
+plot(fit)
+```
+

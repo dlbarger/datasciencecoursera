@@ -1,0 +1,99 @@
+---
+output: word_document
+---
+# Statistical Inference Course Project
+
+### Course: statinference-006
+### Author: Dennis Barger
+### Date:   10/22/2014
+
+## Project Assignment
+The project will explore inference by using simulation.  The project deliverable should be a 2 page report in pdf format that uses knitr to combine text, code and analysis results.
+
+Simulation Exercises:
+The simulation exercises will utilize R to explore exponential distribution.  The R function rexp(n,lambda) should be used to simulate data.  Lambda is the rate paramenter.  The mean of the exponential distribution is 1/lambda and the standard deviation will also be 1/lambda.  Set lambda = 0.2 for all simulations.  The exercise will investigate the distsribution of averages of 40 exponential distributions.  The exercise should generate at least 1000 simulation for average of 40 exponentials.
+
+The simulation exercise should answer the following questions:
+
+* Show where the distribution is centered and compare to the theoretical center of distribution.
+* Show istributions variability and compare to the theoretical variance.
+* Show how the distribution is approximately normal.
+* Evaluate the coverage of the confidence interval for 1/lambda:  X¯±1.96Sn???.
+
+## Simulation Exercises
+### Simulation Exercise:  Creating Simulation Dataset
+The first step in the exercise is to generate a dataset of simulated mean values based on an exponential distribution.  The following R code describes the logic for initialization and generation of simulated values.
+
+```{r echo=TRUE}
+# Initialize required packages and variables used in the analysis
+library(ggplot2)
+lambda = 0.2
+n = 40
+set.seed(100)
+
+#Generate 1000 mean simulation based on 40 exponentials
+df <- data.frame(replicate(1000,mean(rexp(40,.2))))
+names(df) <- "mean_value"
+```
+
+A quick summary of the dataset indicates the data is similar to a normal distribution with some slight variation.
+
+```{r,echo=TRUE}
+summary(df)
+g <- ggplot(data=df, aes(x=mean_value))
+g <- g + geom_histogram(aes(y=..density..), binwidth=0.20, fill="light blue", color="black")
+```
+
+```{r, echo=TRUE}
+m <- round(mean(df$mean_value),2)
+s <- round(sd(df$mean_value),2)
+v <- round(var(df$mean_value),2)
+print(paste("The mean value is ",m,".  The standard deviation is ", s, " and the variance is ",v,sep=""))
+```
+
+### Simulation Exercise: Show distribution center and compare to theoretical center of distribution
+The theoretical center of distribution is represented as a normal distribution, therefore the mean is calculated as 1/lambda. Since lambda equals 0.20, then the theoretical center (mean) is equal to 5.
+
+The center of this dataset, which is represented as an exponential distribution, is equal to 4.99.  The logic for calculating both centers is as follows:
+
+```{r, echo=TRUE}
+nm_mean <- round(1/lambda,4)
+ex_mean <- round(mean(df$mean_value),4)
+print(paste("The theoretical mean is ",nm_mean," and the exponential mean is ", ex_mean, sep=""))
+
+s <- round((1/lambda)/sqrt(40),2)
+v <- round((1/lambda)/sqrt(40) ^.2,2)
+
+```
+
+### Simulation Exercise:  Show variability of distribution and compare to theoretical variance
+The exponential standard deviation is 0.80 and the normal distribution of 0.79.  The exponential variance is 0.64 in comparison to the normal variance of 0.63.
+
+It's easy to see that a large number of exponential simulations such as 1000 can have a distribution similar to a theoretical or normal distribution.  The following graph further highlights the similarities of distribution models.
+
+```{r, echo=TRUE}
+nm_sd <- round((1/lambda)/sqrt(40),2)
+nm_vr <- round((1/lambda)/sqrt(40) ^.2,2)
+
+ex_sd <- round(sd(df$mean_value),2)
+ex_vr <- round(var(df$mean_value),2)
+print(paste("The theoretical standard deviation is ",nm_sd, " in comparison to the exponential standard deviation of ",ex_sd,sep=""))
+print(paste("The theoretical variance is ",nm_vr, " in comparison to the exponential variance of ",ex_vr,sep=""))
+```
+
+### Simulation Exercise:  Show how the distribution is approximately normal
+The following graph shows a histogram of the exponential distribution mean values with a density overlay of the normal distribution.  Once again, we see the mean for both distributions are closely aligned.
+
+```{r, echo=TRUE}
+g <- ggplot(data=df, aes(x=mean_value))
+g <- g + geom_histogram(aes(y=..density..), binwidth=0.20, fill="light blue", color="black")
+g <- g + stat_function(fun=dnorm, arg=list(mean=1/lambda, sd=sd(df$mean_value)))
+g
+```
+
+### Simulation Exercise:  Evaluate coverage of the confidence interval for 1/lambda
+The confidence interval for 1/lambda can be calculated in R using the T Test.  The T Test logic is similar to mean(val) + c(-1,1) * 1.96 * sd(val)/sqrt(nbr of observations).  Based on the test, the range of values for the 95th confidence interval are 4.95 - 5.05.
+
+```{r,echo=TRUE}
+round(t.test(df$mean_value) $conf.int, 2)
+```

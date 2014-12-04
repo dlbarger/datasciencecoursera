@@ -1,0 +1,89 @@
+---
+output: word_document
+---
+# Statistical Inference Course Project
+
+### Course: statinference-006
+### Author: Dennis Barger
+### Date:   10/22/2014
+
+
+## Basic Inferential Data Analysis
+### Project Assignment
+This exercise involves analyzing the ToothGrowth data in the R datasets package.
+The analysis should include the following deliverables:
+
+* Basic summary data
+* Confidence intervals and hypothesis tests to compare tooth growth by supp and dose
+* Conclusion of findings include assmptions
+
+### Basic Summary of Data
+The ToothGrowth dataset represents the effect of Viamin C on Tooth Growth in Guinea Pigs.  The dataset contains 60 observations on 3 variables:
+
+* len - Tooth length
+* supp - Supplement type (VC = ascorbic acid, OJ = Orange juice)
+* dose - dose in milligrams
+
+There is an equal number of by supplement type and dose:
+```{r,echo=FALSE}
+library("datasets")
+attach(ToothGrowth)
+table(supp,dose)
+```
+
+The following graph plots tooth length values for Orange Juice supplement observations:
+```{r,echo=FALSE}
+par(mar=c(4,4,4,4))
+df <- ToothGrowth[ToothGrowth$supp=="OJ",]
+plot(df$len, main="Tooth Length Sizes for Orange Juice", ylab="Observations", xlab="Tooth Length")
+```
+
+Tooth length values for Ascorbic Acid supplement observations are displayed in this graph:
+```{r,echo=FALSE}
+par(mar=c(4,4,4,4))
+df <-ToothGrowth[ToothGrowth$supp=="VC",]
+plot(df$len, main="Tooth Length Sizes for Ascorbic Acid", ylab="Observations", xlab="Tooth Length")
+
+```
+### Confidence Intervals
+Tooth Growth using Orange Juice Supplements:
+
+ * Mean = 20.66
+ * Standard Deviation = 6.61
+ * Variance = 43.63
+ 
+ Tooth Growth using Ascorbic Acid Supplements:
+ 
+ * Mean = 16.96
+ * Standard Deviation = 8.27
+ * Variance = 68.33
+ 
+ The 95th confidence interval for tooth growth based on orange juice supplements is 18.2 to 23.1.
+ 
+ The 95th confidence interval for tooth growth based on ascorbic acid supplements is 13.9 to 20.
+ 
+ 
+ The following code confirms measurements for Orange Juice:
+```{r,echo=TRUE}
+df <- ToothGrowth[ToothGrowth$supp=="OJ",]
+mean(df$len)
+sd(df$len)
+var(df$len)
+round(t.test(df$len) $conf.int,1)
+hist(df$len, main="Distribution by OJ Supplement", xlab="Tooth Growth")
+```
+
+The following code confirms measurements for Ascorbic Acid:
+```{r,echo=TRUE}
+df <- ToothGrowth[ToothGrowth$supp=="VC",]
+mean(df$len)
+sd(df$len)
+var(df$len)
+round(t.test(df$len) $conf.int,1)
+hist(df$len, main="Distribution by Ascorbic Acid Supplement", xlab="Tooth Growth")
+```
+
+## Conclusion
+The ToothGrowth dataset measures the effect of Vitamin C on tooth growth in Guinea Pigs.  The dataset includes 60 observations on 3 variables:  1) Tooth Growth, 2) Supplement Type and 3) Supplement Dosage.
+
+The experience conducted equal tests across supplements and doses.  The dataset indicates that orange juice supplements resulted in more tooth growth in comparison to ascorbic acid.  The 95th confidence interval for orange juice was 18.2 to 23.1.  However the interval for ascorbic acid was 13.9 to 20.  Orange juice resulted in more tooth growth with less variability.

@@ -40,7 +40,16 @@ Two data files were created for the course project:
 The training and test datasets were cleansed in order to eliminate any discrepancies due to missing data, whether inputing individual values or removing entire columns.
 
 ```{r}
-set.seed(1200)
+require("caret")
+require("randomForest")
+require("rpart")
+
+library(caret)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+
+set.seed(0)
 setwd("c:\\data\\coursera\\predmachlearn")
 fileTrain <- "./pml-training.csv"
 fileTest <- "./pml-testing.csv"
@@ -67,8 +76,7 @@ dim(dfTest)
 Cross validation requires dividing the current training dataset into subsets of Training data and Testing data.  The subsampling will be random and without replacements.  30% of the original training dataset will be partitioned for testing.  The caret package will be used for subsampling.
 
 ```{r}
-library(caret)
-inTrain <- createDataPartition(y=dfTrain$classe, p=0.7, list=FALSE)
+inTrain <- createDataPartition(y=dfTrain$classe, p=0.75, list=FALSE)
 dfTrainSet <- dfTrain[inTrain,]
 dfTestSet  <- dfTest[-inTrain,]
 
@@ -78,26 +86,39 @@ dim(dfTestSet)
 ### Summary of Training Dataset
 There is a greater frequency of participants completing the exercise correctly (i.e. Classe A) in comparison to other exercise classes.
 ```{r }
-dat <- table(dfTrain$classe)
+dat <- table(dfTrainSet$classe)
 dat
 barplot(dat,main="Exercise Frequency By Classe",xlab="Classe",ylab="Exercise Frequency")
 # plot(dfTrainSet$classe,main="Exercise Frequency By Classe:  Training Dataset", xlab="Classe", ylab="Exercise Frequency")
 ```
 
 ## Modeling
-### Predicting with Decision Trees
-
-```{r echo=FALSE}
-library(rpart)
-library(rattle)
-library(rpart.plot)
-```
+### Predicting with Random Forest
 
 ```{r}
-modFit <- train(classe ~ ., method="rpart", data=dfTrainSet)
-print(modFit$finalModel)
-fancyRpartPlot(modFit$finalModel)
-predict(modFit,newdata=dfTestSet)
+# Cleanup unused variables to reduce memory issues
+rm(inTrain)
+rm(dfTrain)
+rm(dat)
+
+model <- randomForest(classe ~ ., data=dfTrainSet, method="class")
+prediction <- predict(model,dfTestSet,type="class")
+```
+
+## Project Submission
+
+```{r}
+results <- predict(model, dfTest, type="class")
+
+pml_write_files = function(x) {
+    n = length(x)
+    for(i in 1:n) {
+        filename = paste0("problem_id_",i,".txt")
+        write.table(x[i], file=filename, quote=FALSE, row.names=FALSE,col.names=FALSE)
+    }
+}
+
+pml_write_files(results)
 ```
 
 ## References

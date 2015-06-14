@@ -1,0 +1,132 @@
+---
+title: 'Reproducible Research:  Peer Assessment 1'
+author: "Dennis Barger"
+date: "June 12, 2015"
+output: html_document
+---
+
+# Introduction
+Personal activity monitoring devices such as Fitbit, Nike Fuelband and Jawbone are allowing people to collect measurements about exercise activities in order to improve health.  The research contained in this document provides insight into the statistical analysis of data collected from these devices.
+
+The research utilizes data collected from a personal activity monitoring device during October and November 2012.  The dataset includes the count of steps taken during 5 minute intervals for each day.
+
+# Analysis Approach
+The analysis objective is to research the average steps taken per day, and discovered patterns of activity.  The research will answer the following questions:
+
+* What is the mean total number of steps taken per day?
+* What is the average daily activity pattern?
+* Are there differences in activity pattersn between weekdays and weekends?
+
+## Activity Dataset
+The Activity monitoring data is a comma-separated data file containing 17,568 observations.  The dataset includes the following elements:
+
+* Steps:  Number of steps taken in a 5 minute interval on a specific date.
+* Date:  Date when the measurement was taken.
+* Interval:  Identifier for the specific 5-minute interval during the day.
+
+## Data Preprocessing
+```{r}
+## Initialize required packages
+require(ggplot2)
+library(ggplot2)
+
+## Data preprocessing
+setwd("c:\\get-repos\\datasciencecoursera\\repdata015\\RepData_PeerAssessment1")
+activity <- read.csv("activity.csv",sep=",")
+activity$date <- as.Date(activity$date)
+str(activity)
+```
+
+## Analysis Findings
+This section answers the analysis questions identified for the research and provide additional information about the dataset.
+
+### What is the mean total number of steps taken per day?
+Before answering the question, observations with missing Steps values are removed to improve accuracy.  The following histogram displays the frequency of total steps per day.
+
+```{r}
+dat <- activity[!is.na(activity$steps),]
+tbl <- aggregate(steps ~ date, data=dat, sum)
+qplot(tbl$steps, 
+     geom="histogram",
+     binwidth=1000, 
+     main="Frequency of Total Steps Per Day",
+     xlab="Total Steps Per DaY",
+     ylab="Count of Days",
+     fill=I("blue"),
+     col=I("white"))
+
+mean.steps <- round(mean(tbl$steps),0)
+median.steps <- median(tbl$steps)
+```
+```{r echo=FALSE}
+paste("Average (mean) steps taken per day:  ",mean.steps,sep = "")
+paste("Median steps taken per day:  ",median.steps,sep = "")
+```
+
+### What is the average daily activity pattern?
+The line chart represents the average steps taken per interval across all days measurements were   Interval values between 0 and 1200 equate to 12:00am to 12:00pm.  Values greater than 1200 represent intervals from 12:00pm up to 12:00am the next day.
+
+```{r}
+rm(tbl)
+tbl <- aggregate(steps ~ interval, data=dat, FUN = mean)
+plot(x=tbl$interval, y=tbl$steps, type="l", main="Average Daily Activity", xlab="5 Minute Intervals", ylab="Average Daily Steps")
+
+x <- tbl[which.max(tbl$steps),]
+max.interval <- x$interval
+interval.val <- round(x$steps,0)
+```
+```{r echo=FALSE}
+paste("The interval with the highest average of steps is ", max.interval, sep = "")
+paste("The average steps for the interval is ", interval.val, sep="")
+```
+
+### Imput Missing Values
+The Activity dataset contains 2,304 observations where the "steps" value is NA.  This could impact accuracy of analysis.  To improve accuracy, the research will impute the mean across all days for the corresponding interval.
+
+```{r}
+cnt <- sum(is.na(activity$steps))
+paste("Total count of missing steps values:  ", cnt, sep="")
+missing <- which(is.na(activity$steps))
+impute_val <- rep(mean(activity$steps, na.rm = TRUE, times=length(missing)))
+dat <- activity
+dat[missing, "steps"] <- impute_val
+```
+
+Let's compare the dataset where missing values were removed to the new dataset with imputed values and determine if the mean and median differ.
+
+```{r}
+tbl <- aggregate(steps ~ date, data=dat, sum)
+qplot(tbl$steps, 
+     geom="histogram",
+     binwidth=1000, 
+     main="Frequency of Total Steps Per Day",
+     xlab="Total Steps Per DaY",
+     ylab="Count of Days",
+     fill=I("blue"),
+     col=I("white"))
+
+mean.steps <- round(mean(tbl$steps),0)
+median.steps <- median(tbl$steps)
+```
+```{r echo=FALSE}
+paste("Average (mean) steps taken per day:  ",mean.steps,sep = "")
+paste("Median steps taken per day:  ",median.steps,sep = "")
+```
+Updating missing "steps" values with an imputed value resulted in the mean and median values to be similar. 
+
+### Are there differences in activity patterns between weekdays and weekends?
+
+```{r}
+dat$weekday <- "Weekday"
+dat$weekday[weekdays(dat$date) %in% c("Saturday","Sunday")] <- "Weekend"
+dat$weekday <- as.factor(dat$weekday)
+
+tbl <- aggregate(steps ~ interval + weekday, data = dat, mean)
+
+qplot(x=interval, 
+      y= steps, 
+      data=tbl,
+      geom = c("line"),
+      facets = weekday~.,
+      ylab = "Average Daily Steps")
+```
